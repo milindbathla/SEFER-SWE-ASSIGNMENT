@@ -2,6 +2,8 @@ import { getDocumentProxy } from 'unpdf';
 
 export interface TextItem {
   x: number;
+  /** Right edge, when known (OCR word box; text-layer item width). */
+  x1?: number;
   text: string;
   /** OCR only: word confidence 0-100. */
   confidence?: number;
@@ -63,7 +65,7 @@ export async function readPdfText(data: Uint8Array): Promise<PdfText> {
         row = { y, items: [] };
         pageRows.push(row);
       }
-      row.items.push({ x, text });
+      row.items.push({ x, ...(raw.width ? { x1: x + raw.width } : {}), text });
     }
     charsPerPage.push(chars);
     pageRows.sort((a, b) => b.y - a.y); // top of page first

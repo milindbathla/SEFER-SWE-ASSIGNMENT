@@ -1,5 +1,6 @@
-import type { ContainerReading, SourceField } from '@sefer/shared';
+import type { ContainerReading, DocumentLine, SourceField } from '@sefer/shared';
 import { byLabel, columnsBelow, fieldsFrom, findRow, norm, partyBelow, toField, type Reading } from './layout.js';
+import { parsePackingTable } from './packingListTable.js';
 import type { TextRow } from './pdfText.js';
 
 /**
@@ -12,6 +13,8 @@ import type { TextRow } from './pdfText.js';
 export interface ParsedDocument {
   fields: Record<string, SourceField>;
   containers: ContainerReading[];
+  /** Packing list only: goods rows that passed the arithmetic check (see packingListTable.ts). */
+  lines?: DocumentLine[];
   warnings: string[];
 }
 
@@ -25,7 +28,8 @@ function vesselVoyage(r: Reading | null): { vessel: Reading | null; voyage: Read
   return { vessel: { ...r, value: m[1].trim() }, voyage: { ...r, value: m[2] } };
 }
 
-export function parsePackingList(rows: TextRow[]): ParsedDocument {
+/** `tableRows`: rows to read the goods table from (for scans, a second OCR pass with the ruling lines removed). */
+export function parsePackingList(rows: TextRow[], tableRows: TextRow[] = rows): ParsedDocument {
   const warnings: string[] = [];
   const grand = byLabel(rows, new RegExp(String.raw`GRAND\s+TOTAL\s*[:.]?\s*(${AMOUNT})\s+(${AMOUNT})`, 'i'));
   const vessel = byLabel(rows, /Vessel\s*[:.]?\s*([A-Z][A-Z .'-]*?[A-Z])\s+(\d{2,4}[A-Z]?)\b/i);
@@ -52,9 +56,20 @@ export function parsePackingList(rows: TextRow[]): ParsedDocument {
     totalGrossWeight: byLabel(rows, new RegExp(String.raw`TOTAL\s+G\.?\s*W\.?\s*[:.]?\s*((?:${AMOUNT})\s*KGS?)\b`, 'i')),
     totalVolume: byLabel(rows, new RegExp(String.raw`TOTAL\s+MEAS\.?\s*[:.]?\s*((?:${AMOUNT})\s*CBM)\b`, 'i')),
   });
-  warnings.push('The packing-list goods table is not read automatically (its columns are not reliable enough). Enter the lines in the form; the text of every row is listed under "Notes, remarks and other text".');
+  const table = parsePackingTable(tableRows);
+  if (table.lines.length) {
+    warnings.push(`${table.lines.length} goods row(s) read from the table. A row is listed only where cartons × pieces per carton = total pieces among the numbers read; check every row against the page.`);
+  } else {
+    warnings.push('No goods row of the packing list could be read (no row with a style code where cartons × pieces per carton = total pieces). Enter the lines in the form; the text of every row is listed below.');
+  }
+  warnings.push(...table.warnings);
+  const sum = (k: string) => table.lines.reduce((n, l) => n + Number(l.cells[k]?.value?.replace(/,/g, '') ?? NaN), 0);
+  const total = (f?: SourceField) => (f?.value ? Number(/[\d,.]+/.exec(f.value)?.[0].replace(/,/g, '')) : NaN);
+  if (table.lines.length && (sum('quantity') !== total(fields.totalQuantity) || sum('cartons') !== total(fields.totalCartons))) {
+    warnings.push(`The rows read add up to ${sum('cartons')} cartons and ${sum('quantity')} pieces; the grand total reads ${fields.totalCartons?.value ?? '?'} cartons and ${fields.totalQuantity?.value ?? '?'} pieces. Rows may be missing or misread: check the table.`);
+  }
   if (!fields.shipper || !fields.consignee) warnings.push('Shipper and/or consignee could not be read from a labelled column. Enter them from the page.');
-  return { fields, containers: [], warnings };
+  return { fields, containers: [], lines: table.lines, warnings };
 }
 
 // ISO 6346: 3-letter owner code + equipment category U, J or Z, 6-digit serial, check digit. The category letter keeps

@@ -97,6 +97,7 @@ export async function extractDocument(fileName: string, data: Uint8Array, opts: 
       ...base,
       method: 'text_layer',
       fields: parsed.fields,
+      lines: parsed.lines ?? [],
       containers: parsed.containers,
       textLines: pdf.rows.map((r) => ({ page: r.page, text: r.text })),
       warnings: [...warnings, ...parsed.warnings],
@@ -157,8 +158,22 @@ async function extractScanned(fileName: string, proxy: Parameters<typeof ocrPage
     const parsed = parseInvoiceRows(rows);
     ({ fields, lines } = parsed);
     warnings.push(...parsed.warnings);
-  } else if (docType === 'packing_list' || docType === 'bill_of_lading') {
-    const parsed = docType === 'packing_list' ? parsePackingList(rows) : parseBillOfLading(rows);
+  } else if (docType === 'packing_list') {
+    // Ruled goods tables lose most number cells in the page-layout OCR pass, so the table is read in a second pass
+    // with the ruling lines removed (see ocrPage). Its failure only costs the table, never the fields already read.
+    let tableRows: TextRow[] = [];
+    try {
+      for (let page = 1; page <= pages; page++) tableRows.push(...ocrRows((await ocrPage(proxy, page, 'table')).lines));
+    } catch (err) {
+      tableRows = [];
+      warnings.push(`The goods table could not be OCR-read (${err instanceof OcrError ? err.message : 'unexpected OCR error'}). Enter the lines from the page.`);
+    }
+    const parsed = parsePackingList(rows, tableRows);
+    ({ fields, containers } = parsed);
+    lines = (parsed.lines ?? []).map((l) => ({ cells: Object.fromEntries(Object.entries(l.cells).map(([k, f]) => [k, { ...f, note: [f.note, 'Read by a second OCR pass with the table lines removed.'].filter(Boolean).join('. ') }])) }));
+    warnings.push(...parsed.warnings);
+  } else if (docType === 'bill_of_lading') {
+    const parsed = parseBillOfLading(rows);
     ({ fields, containers } = parsed);
     warnings.push(...parsed.warnings);
   } else {

@@ -18,10 +18,13 @@ export const OCR_PAGE_TIMEOUT_MS = 60_000;
 /** Scans below this width are upscaled 2x before OCR (measured on the sample scans: confidence 63→73% and 77→82%). */
 const UPSCALE_BELOW_WIDTH = 2000;
 const MAX_PIXELS = 16_000_000;
+/** Table mode: dark runs at least this long (in PDF points) are ruling lines, not text strokes. */
+const RULE_MIN_LENGTH_PT = 30;
+const RULE_DARK_BELOW = 160;
 
 export class OcrError extends Error {}
 
-export interface OcrWord { text: string; confidence: number; x: number }
+export interface OcrWord { text: string; confidence: number; x: number; x1: number }
 export interface OcrLine { page: number; y: number; text: string; confidence: number; words: OcrWord[] }
 export interface OcrPageResult { page: number; confidence: number; lines: OcrLine[]; width: number; upscaled: boolean }
 
@@ -100,6 +103,41 @@ function encodePng(gray: Uint8Array, w: number, h: number): Buffer {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
+/**
+ * Whitens long straight horizontal and vertical dark runs (table ruling lines) and their 1-pixel fringe. In a ruled
+ * table each number sits alone in a bordered cell, and tesseract's page-layout step drops many such cells as graphics
+ * (measured on the sample packing list: most quantity cells were missing). Text strokes are far shorter than `minLen`.
+ */
+export function removeRules(g: Uint8Array, w: number, h: number, minLen: number): number {
+  const mark = new Uint8Array(w * h);
+  const scan = (outer: number, inner: number, at: (o: number, i: number) => number) => {
+    for (let o = 0; o < outer; o++) {
+      let start = -1;
+      for (let i = 0; i <= inner; i++) {
+        const dark = i < inner && g[at(o, i)] < RULE_DARK_BELOW;
+        if (dark && start < 0) start = i;
+        if (!dark && start >= 0) {
+          if (i - start >= minLen) for (let k = start; k < i; k++) mark[at(o, k)] = 1;
+          start = -1;
+        }
+      }
+    }
+  };
+  scan(h, w, (y, x) => y * w + x);
+  scan(w, h, (x, y) => y * w + x);
+  let erased = 0;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      if (mark[i] || mark[i - w] || mark[i + w] || mark[i - 1] || mark[i + 1]) {
+        if (g[i] !== 255) erased++;
+        g[i] = 255;
+      }
+    }
+  }
+  return erased;
+}
+
 function withTimeout<T>(p: Promise<T>, ms: number, onTimeout: () => Promise<void>): Promise<T> {
   let timer: NodeJS.Timeout;
   const timeout = new Promise<never>((_, reject) => {
@@ -108,11 +146,15 @@ function withTimeout<T>(p: Promise<T>, ms: number, onTimeout: () => Promise<void
   return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
 }
 
-interface TesseractWord { text: string; confidence: number; bbox: { x0: number; y0: number } }
+interface TesseractWord { text: string; confidence: number; bbox: { x0: number; x1: number; y0: number } }
 interface TesseractLine { text: string; confidence: number; bbox: { y0: number }; words: TesseractWord[] }
 
-/** OCR of one page: the largest embedded image on the page (a scan). */
-export async function ocrPage(pdf: PdfProxy, page: number): Promise<OcrPageResult> {
+/**
+ * OCR of one page: the largest embedded image on the page (a scan).
+ * mode 'table' is a second pass for ruled goods tables: the ruling lines are erased first. The page segmentation mode
+ * is not changed (tesseract's library default, a single uniform block of text lines, keeps a table row on one line).
+ */
+export async function ocrPage(pdf: PdfProxy, page: number, mode: 'page' | 'table' = 'page'): Promise<OcrPageResult> {
   return serialized(async () => {
     let images;
     try {
@@ -128,13 +170,14 @@ export async function ocrPage(pdf: PdfProxy, page: number): Promise<OcrPageResul
     // Positions are converted from image pixels to PDF points, the unit the text-layer parsers use.
     const pageWidthPt = (await pdf.getPage(page)).getViewport({ scale: 1 }).width;
     const scale = (upscaled ? 2 : 1) * (img.width / pageWidthPt);
+    if (mode === 'table') removeRules(im.g, im.w, im.h, Math.round(RULE_MIN_LENGTH_PT * scale));
     const worker = await getWorker();
     const { data } = await withTimeout(worker.recognize(encodePng(im.g, im.w, im.h), {}, { text: true, blocks: true }), OCR_PAGE_TIMEOUT_MS, resetWorker);
     const lines: OcrLine[] = [];
     for (const block of data.blocks ?? []) {
       for (const para of block.paragraphs) {
         for (const l of para.lines as unknown as TesseractLine[]) {
-          const words = l.words.filter((w) => w.text.trim()).map((w) => ({ text: w.text.trim(), confidence: Math.round(w.confidence), x: Math.round(w.bbox.x0 / scale) }));
+          const words = l.words.filter((w) => w.text.trim()).map((w) => ({ text: w.text.trim(), confidence: Math.round(w.confidence), x: Math.round(w.bbox.x0 / scale), x1: Math.round(w.bbox.x1 / scale) }));
           if (words.length) lines.push({ page, y: Math.round(l.bbox.y0 / scale), text: words.map((w) => w.text).join(' '), confidence: Math.round(l.confidence), words });
         }
       }
@@ -146,5 +189,5 @@ export async function ocrPage(pdf: PdfProxy, page: number): Promise<OcrPageResul
 
 /** OCR lines as layout rows (top of page first), compatible with the text-layer parsers. */
 export function ocrRows(lines: OcrLine[]): TextRow[] {
-  return lines.map((l) => ({ page: l.page, y: -l.y, items: l.words.map((w) => ({ x: w.x, text: w.text, confidence: w.confidence })), text: l.words.map((w) => w.text).join('  '), confidence: l.confidence }));
+  return lines.map((l) => ({ page: l.page, y: -l.y, items: l.words.map((w) => ({ x: w.x, x1: w.x1, text: w.text, confidence: w.confidence })), text: l.words.map((w) => w.text).join('  '), confidence: l.confidence }));
 }

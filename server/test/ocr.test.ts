@@ -52,8 +52,37 @@ describe('OCR of scanned PDFs (local engine, no runtime download)', async () => 
       expect(f.quote).toBeTruthy();
       expect(typeof f.confidence).toBe('number');
     }
-    expect(pl.lines).toEqual([]); // the goods table is not read automatically
-    expect(pl.warnings.join(' ')).toMatch(/goods table is not read automatically/);
+  });
+
+  it('packing list goods table: all 5 rows are read by the second OCR pass (table lines removed), every cell unverified with its confidence', () => {
+    const cells = (k: string) => pl.lines.map((l) => l.cells[k]?.value ?? null);
+    expect(pl.lines).toHaveLength(5);
+    // Same values as the reviewed transcription (fixtures/sample-transcriptions), except where noted.
+    expect(cells('cartonRange')).toEqual(['1-48', '49-97', '98-127', '128-137', '138']);
+    // W-B220 is read at 47% confidence: below the threshold, so it is withheld (not guessed) and must be entered.
+    expect(cells('style')).toEqual(['NB-T101', 'NB-H205', 'NB-C330', null, 'NB-P118S']);
+    expect(pl.lines[3].cells.style).toMatchObject({ confidence: 47, note: expect.stringMatching(/below 50% confidence/) });
+    expect(cells('cartons')).toEqual(['48', '49', '30', '10', '1']);
+    expect(cells('pcsPerCarton')).toEqual(['50', '24', '30', '60', '24']);
+    expect(cells('quantity')).toEqual(['2,400', '1,176', '900', '600', '24']);
+    expect(cells('description')).toEqual([
+      "MEN'S CREW NECK S/S TEE\n100% COTTON JERSEY 160GSM", 'LADIES PULLOVER HOODIE\nTC 65/35 FLEECE 280GSM', "MEN'S SLIM CHINO PANT\n98/2 COTTON/SPANDEX TWILL",
+      'LADIES L/S V-NECK BLOUSE\n100% POLY CREPE (BUYER FABRIC)', 'LADIES POLO - SAMPLES (FOC)\n100% COTTON PIQUE',
+    ]);
+    // Row 4's N.W./Ctn "9.60" is OCR-read as "960", so its weights fail the arithmetic check and stay empty (not repaired).
+    expect(cells('netWeight')).toEqual(['432.00', '715.40', '486.00', null, '5.10']);
+    expect(cells('grossWeight')).toEqual(['480.00', '774.20', '522.00', null, '5.80']);
+    for (const l of pl.lines) {
+      for (const f of Object.values(l.cells)) {
+        expect(f.verification).toBe('unverified');
+        expect(f.page).toBe(1);
+        expect(f.quote).toBeTruthy();
+        expect(typeof f.confidence).toBe('number');
+      }
+      expect(l.cells.quantity!.note).toMatch(/arithmetic check, not a verification.*second OCR pass with the table lines removed/);
+    }
+    expect(pl.warnings.join(' ')).toMatch(/5 goods row\(s\) read from the table/);
+    expect(pl.warnings.join(' ')).not.toMatch(/add up to/); // 138 cartons and 5,100 pieces, as the grand total
   });
 
   it(`a reading below ${MIN_OCR_CONFIDENCE}% confidence is not offered as a value; its OCR text stays as evidence`, () => {
@@ -136,15 +165,37 @@ describe('OCR of scanned PDFs (local engine, no runtime download)', async () => 
     });
 
     it('when every OCR reading is verified, the OCR issue disappears', async () => {
-      const all = (d: ExtractedDocument) => ({ ...confirm(d, Object.keys(d.fields)), containers: d.containers.map((c) => ({ ...c, number: { ...c.number, verification: 'confirmed' as const }, ...(c.seal ? { seal: { ...c.seal, verification: 'confirmed' as const } } : {}) })) });
+      // Fields, goods-table cells and container readings: every OCR reading must be verified.
+      const all = (d: ExtractedDocument) => ({ ...confirm(d, Object.keys(d.fields)), lines: d.lines.map((l) => ({ cells: Object.fromEntries(Object.entries(l.cells).map(([k, f]) => [k, { ...f, verification: 'confirmed' as const }])) })), containers: d.containers.map((c) => ({ ...c, number: { ...c.number, verification: 'confirmed' as const }, ...(c.seal ? { seal: { ...c.seal, verification: 'confirmed' as const } } : {}) })) });
       const res = await analyzeShipment([invoice, all(pl), all(bl)], emptyBrokerInput(), NOW);
       expect(res.issues.some((i) => i.rule === 'OCR_UNVERIFIED')).toBe(false);
     });
 
-    it('on the PDF-only path, the unread goods table and the unreadable container number are reported, never skipped (regression)', () => {
-      // OCR does not read the packing list's goods table: the quantity / fibre comparison must say it did not run.
-      expect(pl.lines).toHaveLength(0);
-      expect(r.issues.find((i) => i.rule === 'PACKING_LIST_ROWS_NOT_READ')).toMatchObject({ blocking: true, resolution: 'open' });
+    it('on the PDF-only path, the invoice lines are compared with the OCR-read packing-list rows (C-2 / C-3 found)', () => {
+      expect(r.issues.some((i) => i.rule === 'PACKING_LIST_ROWS_NOT_READ')).toBe(false);
+      const ids = (rule: string) => r.issues.filter((i) => i.rule === rule).map((i) => i.id);
+      expect(ids('QUANTITY_MISMATCH')).toEqual(['QUANTITY_MISMATCH:invoice[1]/line[2]']); // 1,200 vs 1,176
+      expect(ids('FIBRE_MISMATCH')).toEqual(['FIBRE_MISMATCH:invoice[1]/line[2]']); // 60/40 vs 65/35
+      const q = r.issues.find((i) => i.rule === 'QUANTITY_MISMATCH')!;
+      expect(q.evidence.find((e) => e.label === 'packing-list quantity')).toMatchObject({ value: '1,176', ocr: { verified: false } });
+      // The row whose style could not be read is pointed at, not silently dropped.
+      expect(ids('STYLE_NOT_ON_PACKING_LIST')).toEqual(['STYLE_NOT_ON_PACKING_LIST:invoice[1]/line[4]']);
+      expect(r.issues.find((i) => i.rule === 'STYLE_NOT_ON_PACKING_LIST')!.explanation).toMatch(/1 packing-list row\(s\) have no \(readable\) style/);
+      expect(ids('PACKING_LIST_ROWS_TOTAL')).toEqual([]);
+      // Comparisons use unverified readings, but nothing that rests on them reaches the XML.
+      expect(r.xml).not.toMatch(/<invoice-quantity>(1176|1200)</); // the NB-H205 line quantity is withheld
+    });
+
+    it('once the user enters the unreadable style from the page, all five invoice lines are compared with the packing list', async () => {
+      const lines = pl.lines.map((l, i) => (i === 3 ? { cells: { ...l.cells, style: { ...l.cells.style!, value: 'W-B220', verification: 'corrected' as const } } } : l));
+      const res = await analyzeShipment([invoice, { ...pl, lines }, bl], emptyBrokerInput(), NOW);
+      const rules = res.issues.map((i) => i.rule);
+      for (const rule of ['PACKING_LIST_ROWS_NOT_READ', 'STYLE_NOT_ON_PACKING_LIST', 'STYLE_NOT_ON_INVOICE', 'QUANTITY_NOT_COMPARED', 'PACKING_LIST_ROWS_TOTAL']) expect(rules).not.toContain(rule);
+      expect(res.issues.filter((i) => i.rule === 'QUANTITY_MISMATCH' || i.rule === 'FIBRE_MISMATCH').map((i) => i.id).sort())
+        .toEqual(['FIBRE_MISMATCH:invoice[1]/line[2]', 'QUANTITY_MISMATCH:invoice[1]/line[2]']);
+    });
+
+    it('on the PDF-only path, the unreadable container number is described as unreadable, never as "null" (regression)', () => {
       // The container reading below the confidence threshold is described as unreadable (previously rendered as "null (unknown)").
       const c = r.issues.find((i) => i.rule === 'CONTAINER_NUMBER')!;
       expect(c.explanation).not.toMatch(/\bnull\b/);

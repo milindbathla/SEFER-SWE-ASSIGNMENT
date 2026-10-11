@@ -107,6 +107,7 @@ check('the XML contains no unverified OCR value (vessel name withheld)', !(await
 // 4. Review the OCR readings: correct one, reject one, confirm one, then confirm the rest after comparing with the page
 await clickButton('1. Documents');
 await waitFor(`!!${card('BMLVHCM26090418_House_BL.pdf')}`, 'B/L card');
+check('the packing-list goods table is read by OCR: 5 rows with style, quantity and description, shown as unverified readings', await evaluate(`(() => { const t = ${card('SPG-PL-2609-117_Packing_List.pdf')}.innerText; return t.includes('Lines (5)') && ['NB-T101', 'NB-H205', '2,400', '1,176', '65/35'].every((v) => t.includes(v) || [...${card('SPG-PL-2609-117_Packing_List.pdf')}.querySelectorAll('input, textarea')].some((i) => i.value.includes(v))); })()`));
 await typeInto(`${fieldRow('BMLVHCM26090418_House_BL.pdf', 'Port Of Loading')}.querySelector('input')`, 'CAT LAI, HCMC, VN');
 check('typing over an OCR reading marks it "corrected" and keeps the OCR text as evidence', await waitFor(`${fieldRow('BMLVHCM26090418_House_BL.pdf', 'Port Of Loading')}.innerText.includes('corrected') && ${fieldRow('BMLVHCM26090418_House_BL.pdf', 'Port Of Loading')}.innerText.includes('WN')`, 'corrected'));
 await evaluate(`[...${fieldRow('BMLVHCM26090418_House_BL.pdf', 'Shipped On Board Date')}.querySelectorAll('button')].find((b) => b.textContent === 'Reject').click()`);
@@ -205,10 +206,12 @@ check('choosing a value with a note resolves exactly that issue (blocking count 
 qx = await xmlNow();
 check('the chosen origin is in the XML for line 5 only', count(qx, '<country-origin>BD</country-origin>') === 1);
 
-// B: the packing-list goods table is not read by OCR, so the quantity/fibre comparison is reported as NOT performed (never skipped silently)
-const rowsId = 'PACKING_LIST_ROWS_NOT_READ';
-check('B: "invoice lines could not be compared with the packing list" is shown as a blocking item', await waitFor(`!!${issueEl(rowsId)} && ${issueEl(rowsId)}.innerText.includes('blocking') && ${issueEl(rowsId)}.innerText.includes('NOT checked')`, 'rows-not-read'));
-check('B: "Record decision" is disabled until a note says what was compared', await evaluate(`[...${issueEl(rowsId)}.querySelectorAll('button')].find((b) => b.textContent === 'Record decision').disabled === true`));
+// B: the invoice lines are compared with the OCR-read packing-list rows: the known NB-H205 differences are found on the PDF-only path
+const qtyId = 'QUANTITY_MISMATCH:invoice[1]/line[2]';
+check('B: no "could not be compared with the packing list" item: the goods table was read', !(await evaluate(`!!${issueEl('PACKING_LIST_ROWS_NOT_READ')}`)));
+check('B: quantity conflict for NB-H205 lists both source values (invoice 1200, packing list 1176)', await waitFor(`!!${issueEl(qtyId)} && ${issueEl(qtyId)}.innerText.includes('1200') && ${issueEl(qtyId)}.innerText.includes('1176')`, 'qty conflict'));
+check('B: fibre-composition conflict for NB-H205 (60/40 vs 65/35) is shown', await waitFor(`!!${issueEl('FIBRE_MISMATCH:invoice[1]/line[2]')} && ${issueEl('FIBRE_MISMATCH:invoice[1]/line[2]')}.innerText.includes('65/35')`, 'fibre conflict'));
+check('B: the W-B220 line points at the packing-list row whose style OCR could not read (not silently unmatched)', await waitFor(`!!${issueEl('STYLE_NOT_ON_PACKING_LIST:invoice[1]/line[4]')} && ${issueEl('STYLE_NOT_ON_PACKING_LIST:invoice[1]/line[4]')}.innerText.includes('no (readable) style number')`, 'style row'));
 
 // D: an acknowledgement alone never clears a blocking valuation issue
 const assistId = 'ASSIST_INDICATOR:invoice[1]/line[4]';

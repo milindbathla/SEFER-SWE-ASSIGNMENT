@@ -183,7 +183,7 @@ function quantityAndFibre(ctx: ShipmentContext): DraftIssue[] {
     if (ctx.packingLists.length && lines.length) {
       out.push(issue('uncertain', {
         id: 'PACKING_LIST_ROWS_NOT_READ', rule: 'PACKING_LIST_ROWS_NOT_READ', title: 'Invoice lines could not be compared with the packing list',
-        explanation: `The packing list's goods table was not read (${ctx.packingLists.map((d) => `${d.fileName}: ${d.method === 'ocr' ? 'OCR does not read this table reliably' : 'no rows'}`).join('; ')}), so the ${lines.length} invoice line(s) were NOT checked for quantity or fibre-composition differences.`,
+        explanation: `The packing list's goods table was not read (${ctx.packingLists.map((d) => `${d.fileName}: ${d.method === 'ocr' ? 'no goods row could be read reliably by OCR' : 'no rows'}`).join('; ')}), so the ${lines.length} invoice line(s) were NOT checked for quantity or fibre-composition differences.`,
         evidence: ctx.packingLists.map((d) => textEvidence(d, null, `${d.fileName}: 0 goods rows`, 'packing-list goods table')),
         requiredAction: 'Enter the packing-list rows (style, quantity, description) in 1. Documents so the checks run, or compare them with the invoice yourself and record what you found.',
         blocking: true, affects: [],
@@ -191,16 +191,29 @@ function quantityAndFibre(ctx: ShipmentContext): DraftIssue[] {
     }
     return out;
   }
+  const noStyle = ctx.packingRows.filter((r) => !r.style);
   for (const l of allLines(ctx)) {
     if (!l.style) continue;
     const rows = ctx.packingRows.filter((r) => r.style === l.style);
     if (rows.length === 0) {
       out.push(issue('uncertain', {
         id: `STYLE_NOT_ON_PACKING_LIST:${l.path}`, rule: 'STYLE_NOT_ON_PACKING_LIST', title: `${lineLabel(l)}: style not found on the packing list`,
-        explanation: 'The invoice line could not be matched to a packing-list row by style number, so its quantity and description were not cross-checked.',
-        evidence: [cellEv(l, 'style')], requiredAction: 'Confirm that these goods were shipped and how they are packed.', blocking: true, affects: [linePath(l, 'invoice-quantity')],
+        explanation: 'The invoice line could not be matched to a packing-list row by style number, so its quantity and description were not cross-checked.'
+          + (noStyle.length ? ` ${noStyle.length} packing-list row(s) have no (readable) style number and may belong to this line: check them in 1. Documents.` : ''),
+        evidence: [cellEv(l, 'style'), ...noStyle.map((r) => evidence(r.doc, r.cells.quantity ?? r.cells.description, 'packing-list row without a readable style'))],
+        requiredAction: 'Confirm that these goods were shipped and how they are packed (or enter the missing style on the packing-list row).', blocking: true, affects: [linePath(l, 'invoice-quantity')],
       }));
       continue;
+    }
+    if (l.quantity && rows.some((r) => !r.quantity)) {
+      // Never skip the quantity comparison silently when a matched row has no (readable) quantity.
+      out.push(issue('uncertain', {
+        id: `QUANTITY_NOT_COMPARED:${l.path}`, rule: 'QUANTITY_NOT_COMPARED', title: `${lineLabel(l)}: quantity not compared with the packing list`,
+        explanation: 'The matching packing-list row has no readable total-pieces value, so the invoice quantity was NOT checked against it.',
+        evidence: [cellEv(l, 'quantity', 'invoice quantity'), ...rows.map((r) => evidence(r.doc, r.cells.quantity ?? r.cells.style, 'packing-list row'))],
+        requiredAction: 'Enter or confirm the packing-list quantity for this style in 1. Documents, or compare it with the page and record what you found.',
+        blocking: true, affects: [linePath(l, 'invoice-quantity')],
+      }));
     }
     const plQty = rows.reduce((s, r) => s + (r.quantity?.value ?? 0), 0);
     if (l.quantity && rows.every((r) => r.quantity) && Math.abs(plQty - l.quantity.value) > 1e-9) {
@@ -229,6 +242,21 @@ function quantityAndFibre(ctx: ShipmentContext): DraftIssue[] {
         }));
         break;
       }
+    }
+  }
+  // Rows vs the packing list's own grand total: a difference means rows are missing or misread.
+  for (const pl of ctx.packingLists) {
+    const rows = ctx.packingRows.filter((r) => r.doc === pl);
+    const total = parseNumber(pl.fields.totalQuantity?.value);
+    if (!rows.length || !total || !rows.every((r) => r.quantity)) continue;
+    const sum = rows.reduce((n, r) => n + r.quantity!.value, 0);
+    if (Math.abs(sum - total.value) > 1e-9) {
+      out.push(issue('uncertain', {
+        id: `PACKING_LIST_ROWS_TOTAL:${pl.id}`, rule: 'PACKING_LIST_ROWS_TOTAL', title: 'Packing-list rows do not add up to its grand total',
+        explanation: `The ${rows.length} row(s) add up to ${sum} pieces; the packing list's grand total reads ${pl.fields.totalQuantity!.value}. A row may be missing or misread, so the comparison with the invoice may be incomplete.`,
+        evidence: [evidence(pl, pl.fields.totalQuantity, 'grand total quantity'), ...rows.map((r) => evidence(r.doc, r.cells.quantity, 'row quantity'))],
+        requiredAction: 'Compare the packing-list rows with the page in 1. Documents and add or correct the missing rows.', blocking: true, affects: [],
+      }));
     }
   }
   for (const r of ctx.packingRows) {

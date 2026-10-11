@@ -8,11 +8,11 @@
 
 | Command | Result |
 |---|---|
-| `npm test` (`vitest run`) | **11 files, 134 tests passed, 0 failed** (includes real OCR of the two sample scans; baseline before this phase: 10 files, 125 passed) |
-| `npm run typecheck` | exit 0 (shared source, shared tests, server, web; 02:17 IST). See the correction note below |
-| `npm run build` | Vite production build succeeded (JS 348 kB, 105 kB gzip; 02:17 IST) |
-| `npm run e2e:api` (against `npm start` on :3001) | **43/43 passed**: scans read by OCR with every reading unverified; unverified OCR blocks readiness and stays out of the XML; then the optional reviewed transcriptions; summary/fingerprint/report consistency, XSD errors traced, withheld vs missing vs proposed, reviewed conflicts stay blocking; upload, classification, evidence, transcription binding (409 on wrong PDF), C-1 … C-12, proposals and approvals, acknowledgements never fill values, format errors, committed D2 = live output, API error paths |
-| `npm run e2e:browser` | **55/55 passed** in real headless Chrome, **PDFs only, no JSON** (14 new review-queue checks: sections A–E; one action confirms a suggestion on 5 lines; source choices disabled until a note is written; choosing a value resolves exactly that issue and reaches the XML; the unread packing-list table is a blocking item; a recorded decision without a value keeps a valuation issue blocking; no waiver for schema-required values; one action applies a typed MID to 5 lines; reload restores and re-analyses the queue decisions; the draft stays NOT READY): the 3 PDFs are read in ≈6.3 s (2 by OCR); OCR progress message; readings shown unverified with confidence; page preview toggle; downloads disabled while OCR is unverified; correct / reject / confirm / confirm-all; OCR issues disappear and verified values reach the XML; reviewing keeps a conflict blocking, waiver disabled until a note is written, waiver closes it, report fingerprint = screen, reload restores the review, clear removes it; upload via the file input, transcription import, issue cards and acknowledgement, invoice-number approval, XML tab, all three downloads, non-PDF and duplicate uploads, no console errors |
+| `npm test` (`vitest run`) | **12 files, 150 tests passed, 0 failed** (includes real OCR of the two sample scans and of the packing-list goods table; before the goods-table fix: 11 files, 134 passed) |
+| `npm run typecheck` | exit 0 (shared source, shared tests, server, web; final run 2026-10-11 11:56 IST). See the correction note below |
+| `npm run build` | Vite production build succeeded (JS 366 kB, 109 kB gzip; final run 11:56 IST) |
+| `npm run e2e:api -- http://127.0.0.1:3001` (against `npm start`; final run 11:57 IST) | **43/43 passed**: scans read by OCR with every reading unverified; unverified OCR blocks readiness and stays out of the XML; then the optional reviewed transcriptions; summary/fingerprint/report consistency, XSD errors traced, withheld vs missing vs proposed, reviewed conflicts stay blocking; upload, classification, evidence, transcription binding (409 on wrong PDF), C-1 … C-12, proposals and approvals, acknowledgements never fill values, format errors, committed D2 = live output, API error paths |
+| `npm run e2e:browser -- http://127.0.0.1:3001/` (final run 11:57 IST) | **58/58 passed** in real headless Chrome, **PDFs only, no JSON** (goods-table fix: the packing list shows 5 OCR-read rows; on the PDF-only path the queue shows the NB-H205 quantity (1200 vs 1176) and fibre conflicts and no "could not be compared" item, and the W-B220 line points at the row whose style OCR could not read; the 3 PDFs now take ≈9.5–16 s across runs because of the second OCR pass. Earlier, 14 review-queue checks: sections A–E; one action confirms a suggestion on 5 lines; source choices disabled until a note is written; choosing a value resolves exactly that issue and reaches the XML; the unread packing-list table is a blocking item; a recorded decision without a value keeps a valuation issue blocking; no waiver for schema-required values; one action applies a typed MID to 5 lines; reload restores and re-analyses the queue decisions; the draft stays NOT READY): the 3 PDFs are read in ≈6.3 s (2 by OCR); OCR progress message; readings shown unverified with confidence; page preview toggle; downloads disabled while OCR is unverified; correct / reject / confirm / confirm-all; OCR issues disappear and verified values reach the XML; reviewing keeps a conflict blocking, waiver disabled until a note is written, waiver closes it, report fingerprint = screen, reload restores the review, clear removes it; upload via the file input, transcription import, issue cards and acknowledgement, invoice-number approval, XML tab, all three downloads, non-PDF and duplicate uploads, no console errors |
 | `npm run sample` (D2; regenerated in the review-queue phase. The XML body is identical to the previous D2: only the input fingerprint and timestamp changed, because the transcription note was reworded. The report now also lists each conflict's source values as choices) | `NOT_READY_TO_FILE`; 16 issues, 15/15 blocking unresolved; 32 of 41 field checks failed; XSD ran, invalid, 10 errors, all traced to missing data; C-1 … C-12 all detected. Regenerated 2026-10-11 after the audit fixes: compared with the previous D2, no element or value changed, only comments |
 | `node server/scripts/xsd-spike.mjs` | A–C fail as expected (https import / no catalog support). D1 valid; D2 exactly 3 expected errors; D3 official sample fails at line 758 `dea-drug-code` |
 | Manual API smoke test (`npm start` + curl) | Health OK; 3 PDFs classified; non-PDF rejected per file; malformed JSON/body → 400; wrong transcription → 409; full analysis 200 |
@@ -77,7 +77,7 @@ application; server logs record only error types.
 
 **OCR workflow (2026-10-11).** Scanned PDFs are now read by local OCR (tesseract.js 7.0.0, approved by the user); see the README for the
 design. Measured on the sample scans against the manual transcriptions: packing list 16/18 fields exact, B/L 17/25 exact, 5 misread (kept
-unverified), 3 not read; the goods table of the packing list and the handwritten container correction are not read. Defects found and fixed
+unverified), 3 not read; the handwritten container correction is not read (the goods table is read since the fix below). Defects found and fixed
 while testing it, each with a test:
 
 | Defect | Fix | Test |
@@ -104,6 +104,32 @@ not-read path is still tested with OCR switched off); the schema test's example 
 No safety assertion was removed or loosened. The e2e step that expected a quantity conflict on the PDF-only path was replaced, because on
 that path the conflict cannot be detected; the new step checks that this is reported as a blocking item instead.
 
+**Live check of the goods-table fix (2026-10-11, against the restarted `npm start` server on :3001, the three real PDFs, no JSON;
+scripted API calls, not a manual browser session):** 5 packing-list rows with quantities 2,400 / 1,176 / 900 / 600 / 24, every cell
+unverified with a confidence; W-B220 style withheld (47%) and that row's weights empty; `QUANTITY_MISMATCH` (1,200 vs 1,176) and
+`FIBRE_MISMATCH` (60/40 vs 65/35) on NB-H205; no `PACKING_LIST_ROWS_NOT_READ`; `CONTAINER_NUMBER` and `GROSS_WEIGHT_MISMATCH` (1,888.00 vs
+1,930.000 KGS) still raised; `NOT_READY_TO_FILE`; the hoodie quantity is withheld and no unverified value is in the XML. 15/15 checks.
+`npm run sample` regenerated D2 with the same input fingerprint (`ff6f9bda0c70efdf`) and only a new timestamp, so the committed D2 was
+kept. `node scripts/render-approach.mjs`: `docs/approach.pdf` is 1 page (A4, 11 pt, 2 cm margins); at 1-inch margins it is longer.
+
+**Goods-table fix (2026-10-11).** The PDF-only path reported `PACKING_LIST_ROWS_NOT_READ`. Root cause, from the actual scan: the packing
+list was OCR'd and its numbers are printed crisply, but tesseract's page-layout step dropped most number cells of the ruled table (for
+NB-T101 it returned 10.00 and 480.00 of seven printed numbers), and the packing-list reader had no row parser at all. Not OCR quality, not
+PDF text (the file has no text layer), not validation between stages. Changing the segmentation mode alone (PSM 4, 6, 11) did not recover
+the cells; erasing the ruling lines did.
+
+| Defect | Fix | Test |
+|---|---|---|
+| Ruled goods table: number cells dropped by OCR layout analysis; no row reader | Second OCR pass for packing lists with ruling lines (dark runs ≥ 30 pt) erased; new reader `packingListTable.ts`: a row counts only where cartons × pcs/carton = total pcs; weights only where both pairs check. Before: 0 rows. After: 5 of 5 rows (37 of 40 cells; 1 style withheld below 50% confidence, 1 row's weights empty after a misread) | `ocr.test.ts` (real scan), `packingTable.test.ts` |
+| A matched packing-list row without a quantity skipped the quantity comparison silently (also possible with manual rows) | New blocking issue `QUANTITY_NOT_COMPARED` | `packingTable.test.ts` |
+| Rows that do not add up to the grand total were not reported | Extraction warning, and blocking issue `PACKING_LIST_ROWS_TOTAL` | `packingTable.test.ts` |
+| An invoice line whose packing-list row has an unreadable style said only "style not found" | `STYLE_NOT_ON_PACKING_LIST` now names the rows without a readable style, with evidence | `ocr.test.ts`, `packingTable.test.ts`, `e2e:browser` |
+| While fixing: resetting the shared OCR worker to "automatic" segmentation after the table pass changed the B/L reading (tesseract's library default is a single block, not automatic) | The table pass changes no OCR parameter, only the image | `ocr.test.ts` (B/L values pinned) |
+
+Before → after on the PDF-only path: `PACKING_LIST_ROWS_NOT_READ` (blocking, comparison not done) → `QUANTITY_MISMATCH` and `FIBRE_MISMATCH` on
+NB-H205 (the same as the reviewed-transcription path) plus `STYLE_NOT_ON_PACKING_LIST` for W-B220 (style unreadable). One assertion was
+updated: "all OCR readings verified → OCR issue gone" now also confirms the 40 goods-table cells, since they are OCR readings too.
+
 ## Test files
 
 | File | Tests | Covers |
@@ -111,7 +137,8 @@ that path the conflict cannot be detected; the new step checks that this is repo
 | `shared/test/schemas.test.ts` | 15 | Zod contracts; rejects malformed extraction data and unknown keys; null vs genuine zero; schema patterns |
 | `server/test/normalize.test.ts` | 14 | Number, date, composition parsing; ambiguous dates; ISO 6346 (standard example + sample); reference tables |
 | `server/test/extraction.test.ts` | 14 | Text-layer extraction of the sample invoice (exact values); scans → not read; invalid files; classification; parser on a synthetic alternative layout; transcription hash guard |
-| `server/test/ocr.test.ts` | 15 | OCR of both sample scans (local model path; type from OCR text; values, page, quote, confidence; all unverified; low-confidence reading withheld; misreads kept as read; container never read as certain); OCR_UNVERIFIED blocks and withholds; acknowledging does not verify; confirm/correct/reject re-evaluate; all verified → issue gone; OCR failure reported as not read; packing-list and B/L readers on a synthetic layout |
+| `server/test/ocr.test.ts` | 18 | OCR of both sample scans (and the packing-list goods table: 5 rows, every cell unverified with confidence; C-2/C-3 found on the PDF-only path; all five lines compared once the unreadable style is entered) (local model path; type from OCR text; values, page, quote, confidence; all unverified; low-confidence reading withheld; misreads kept as read; container never read as certain); OCR_UNVERIFIED blocks and withholds; acknowledging does not verify; confirm/correct/reject re-evaluate; all verified → issue gone; OCR failure reported as not read; packing-list and B/L readers on a synthetic layout |
+| `server/test/packingTable.test.ts` | 13 | Goods-table reader on rows with the sample's structure: all five rows as in the transcription and the same issues as the transcription path; misread → weights empty; non-checking row not listed and named; stray marks and carton ranges; text-layer rows; empty table; rows vs grand total; `QUANTITY_NOT_COMPARED`, `PACKING_LIST_ROWS_TOTAL`, unreadable-style evidence; ruling-line removal keeps short strokes; schema |
 | `server/test/queue.test.ts` | 8 | Source values offered as choices in the field's format (gross weight, quantity, line amount, origin, container with a warning on the struck-through number); none applied; choosing with a note resolves exactly that issue and reaches the XML; a value without a decision leaves the conflict open; a decision without a value keeps a valuation issue blocking and cannot waive a schema-required value; one action confirming a suggestion on 5 lines changes only those fields; broker to-do marks appear in the report and change nothing else; the packing-list comparison is never skipped silently |
 | `server/test/resolution.test.ts` | 15 | Acknowledging is not confirming (D-1 regression); typed values resolve; waivers need a note and only cover optional values; pass only after resolve/waive; withheld vs missing vs proposed; identical results for identical input; fingerprint; summary = issues/checks/XSD and = report; every XSD error traced; CIF arithmetic; stated assist value |
 | `server/test/sample.test.ts` | 17 | Regression for C-1 … C-12 with the approved states; nothing withheld is written, and withheld values are marked in the XML; source documents unchanged; NOT READY status |
@@ -158,7 +185,7 @@ that path the conflict cannot be detected; the new step checks that this is repo
 - The invoice parser is proven on the sample layout and on one synthetic alternative layout only. Unfamiliar layouts may need manual entry.
 - No OCR or vision extraction. Scanned documents always require manual entry or a transcription file.
 - For `xsd:all` content, libxml2 reports only the first missing child of each element. The rule checks list every missing field.
-- The UI was verified by a scripted headless-Chrome run (`npm run e2e:browser`, 55 checks) and screenshot review. Headless Chrome does not
+- The UI was verified by a scripted headless-Chrome run (`npm run e2e:browser`, 58 checks) and screenshot review. Headless Chrome does not
   render the PDF page preview (the frame is blank), so the preview's appearance was not verified. It is not part of `npm test`
   (it needs the running app), and there is no cross-browser, accessibility or visual-regression testing.
 - Local validation is structural only. NetCHB or CBP acceptance is untested (endpoint and authentication unavailable).
