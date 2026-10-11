@@ -1,7 +1,7 @@
 // End-to-end API check against the RUNNING app (start it first with `npm run dev`).
 // It calls the API through the Vite proxy, the same path the browser uses, with the supplied sample documents.
 // Usage: npm run e2e:api            (or: node scripts/e2e/api-e2e.mjs [baseUrl])
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -77,10 +77,21 @@ check('disputed values are "withheld", absent ones "missing", unconfirmed propos
   f(res, 'header/gross-weight')?.provenance === 'withheld' && f(res, 'header/entry-date')?.provenance === 'missing' && f(res, 'header/entry-port')?.provenance === 'proposed');
 check('no proposal written without confirmation', res.fields.every((x) => x.provenance !== 'proposed' || x.value === null));
 
-// D2 consistency: committed XML equals current output (ignoring timestamp)
-const strip = (x) => x.replace(/Generated [^.]+\.\d+Z/, 'Generated <t>').replace(/\r\n/g, '\n').trim();
-const d2 = readFileSync(join(ROOT, 'output/sample/sample-entry-draft.xml'), 'utf8');
-check('committed D2 XML matches what the running app generates (timestamp ignored)', strip(d2) === strip(res.xml));
+// D2 (Artifacts/): drafts made in the app with a reviewer's decisions, so they cannot be regenerated here. Each XML draft and its
+// report must come from the same run (same timestamp and input fingerprint), say NOT READY TO FILE and carry no <transmit/>.
+// Their validation against the official schema is checked in backend/test/artifacts.test.ts.
+const artifacts = readdirSync(join(ROOT, 'Artifacts'));
+const drafts = artifacts.filter((n) => /^entry-draft-.+\.xml$/.test(n));
+check('Artifacts/: every XML draft has its validation report from the same run, labelled NOT READY TO FILE, no <transmit',
+  drafts.length > 0 && drafts.every((n) => {
+    const stamp = n.slice('entry-draft-'.length, -'.xml'.length);
+    const report = `validation-report-${stamp}.md`;
+    if (!artifacts.includes(report)) return false;
+    const xml = readFileSync(join(ROOT, 'Artifacts', n), 'utf8');
+    const md = readFileSync(join(ROOT, 'Artifacts', report), 'utf8');
+    const head = /DRAFT: NOT READY TO FILE\. Generated (\S+)\. Input ([0-9a-f]{16})\./.exec(xml);
+    return head && md.includes(`Generated: ${head[1]}`) && md.includes(`\`${head[2]}`) && /## Status: ❌ NOT READY TO FILE/.test(md) && !/<transmit/.test(xml);
+  }), drafts.join(', '));
 
 // 5. Broker workflow: proposals / transformation / acknowledgements
 const invField = res.fields.find((x) => /invoice-no$/.test(x.path));

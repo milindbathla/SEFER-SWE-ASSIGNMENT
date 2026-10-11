@@ -78,7 +78,7 @@ export function createApp() {
     res.status(404).json({ error: 'Unknown API endpoint.' });
   });
 
-  const webDist = fileURLToPath(new URL('../../web/dist/', import.meta.url));
+  const webDist = fileURLToPath(new URL('../../frontend/dist/', import.meta.url));
   if (existsSync(webDist)) {
     app.use(express.static(webDist));
     app.get(/^(?!\/api\/).*/, (_req, res) => res.sendFile(`${webDist}index.html`));

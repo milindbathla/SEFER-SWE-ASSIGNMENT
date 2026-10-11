@@ -31,4 +31,4 @@ desktop.ini
 .claude/
 
 # Reproducible, not a deliverable (regenerate with `npm run sample`)
-output/sample/sample-analysis.json
+output/

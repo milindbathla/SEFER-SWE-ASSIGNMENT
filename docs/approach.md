@@ -6,8 +6,8 @@ where they disagree, and produce NetCHB-shaped XML without inventing anything.
 
 **Research first.** NetCHB publishes an entry schema (`entry.xsd` + `data_type.xsd`) and a sample. I vendored both schemas unmodified
 (hash-checked); they define the required elements, formats and order. NetCHB's comments add conditional rules, and CBP sources supplied
-codes (mode 11, Tacoma 3002, Schedule K 55224) and valuation rules (19 U.S.C. §1401a). NetCHB's own sample fails its own schema and the
-upload endpoint is behind a login, so the integration is **not production-verified**: the app generates and validates XML for download
+codes (mode 11, Tacoma 3002, Schedule K 55224, provisional for Cat Lai) and valuation rules (19 U.S.C. §1401a). NetCHB's own sample fails its schema at one element
+(`dea-drug-code`) and the upload endpoint is behind a login, so the integration is **not production-verified**: the app generates and validates XML for download
 only, with no `<transmit/>`.
 
 **Architecture.** React + Vite UI, stateless Express API, shared Zod schemas; all TypeScript.
@@ -17,15 +17,15 @@ only, with no `<transmit/>`.
 by **local OCR** (tesseract.js, model installed with the app, no paid API). **OCR is a reading, not a fact**: each value keeps its
 confidence and stays *unverified*, out of the XML behind a blocking issue, until a person confirms, corrects or rejects it. The ruled
 packing-list table lost its number cells in OCR layout analysis, so it is read in a second pass with the ruling lines erased, and a row
-counts only where cartons × pieces per carton = total pieces. On the sample scans: 16/18 packing-list fields, 5/5 goods rows and 17/25
-B/L fields read; misreads (e.g. "WN" for "VN") stay visible and unverified; handwriting is not read. D2 uses the reviewed transcriptions.
+counts only where cartons × pieces per carton = total pieces. On the sample scans: 16/18 packing-list fields, 5/5 goods rows (one style withheld)
+and 17/25 B/L fields read correctly; misreads (e.g. "WN" for "VN") stay visible and unverified; handwriting is not read.
 
 **Validation: deterministic and explainable.**
 
 - **Generic review rules** (no sample values in code): arithmetic and totals, per-style quantity and fibre, weights, packages and vessel
   across documents, ISO 6346 check digits, assist / no-commercial-value / CIF indicators, origin, ambiguous dates, unread documents and
   broker-only data (HTSUS, MID, parties). Each issue carries evidence from every source, the required action and the fields it withholds.
-  A check that cannot run is a blocking issue, never a silent skip.
+  If the packing-list comparison cannot run, that is a blocking issue, never a silent skip.
 - **The XML** holds only consistent extracted values, deterministic derivations and values the user typed or confirmed; proposals
   (e.g. port 3002) are never used silently.
 - **Status** comes from libxml2 against the official XSD plus the conditional rules. It is `NOT_READY_TO_FILE` unless the XSD passes,
@@ -36,12 +36,12 @@ B/L fields read; misreads (e.g. "WN" for "VN") stay visible and unverified; hand
 **Guided review.** A queue groups the open work: suggestions, conflicts (choose a source value, with a note), broker data,
 classification and valuation, validation. The XML is rebuilt and re-validated after every step.
 
-**Trade-offs.** Local OCR with mandatory human verification instead of a cloud vision model (free, offline, misreads cannot reach the XML,
-but every scan needs review). Conservative withholding (safer, more broker input). Scope fits the 24-hour budget: one B/L per entry, no
-currency conversion, duty or PGA data. Drafts are labelled inside the file, so they cannot pass for a filing.
+**Trade-offs.** Local OCR with mandatory human verification instead of a cloud vision model (free, offline, unverified readings cannot reach the
+XML, but every scan needs review). Conservative withholding (safer, more broker input). Scope fits the 24-hour budget: one B/L per entry, no
+currency conversion, duty or PGA data. Drafts are labelled inside the file, so they are not mistaken for a filing.
 
-**Results.** 150 automated tests (no credentials) plus 43 API and 58 headless-Chrome end-to-end checks on the real PDFs. A clean synthetic
-shipment reaches `PASSES_LOCAL_CHECKS` with schema-valid XML; the sample (D2) is honestly `NOT READY TO FILE` (16 issues, 15 blocking;
-10 XSD errors, all from missing broker data).
+**Results.** 153 automated tests (no credentials) plus 43 API and 58 headless-Chrome end-to-end checks on the real PDFs. A clean synthetic
+shipment reaches `PASSES_LOCAL_CHECKS` with schema-valid XML. The sample draft (D2, made in the app from the three PDFs with recorded
+review decisions) is honestly `NOT READY TO FILE`: 12 of 15 blocking issues unresolved, 7 XSD errors, all from missing data.
 
 **Next steps.** NetCHB API access for production verification; more document layouts; handwriting; `<foreign-currency>`, multiple B/Ls.

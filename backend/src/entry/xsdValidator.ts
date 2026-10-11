@@ -40,7 +40,7 @@ function loadSchemas(): LoadedSchemas {
   const entry = read('entry.xsd');
   const data = read('data_type.xsd');
   const files = Object.entries({ 'entry.xsd': entry, 'data_type.xsd': data }).map(([file, text]) => ({
-    file: `server/schemas/netchb/${file}`,
+    file: `backend/schemas/netchb/${file}`,
     sha256: createHash('sha256').update(text, 'utf8').digest('hex'),
     source: SOURCES[file],
   }));
