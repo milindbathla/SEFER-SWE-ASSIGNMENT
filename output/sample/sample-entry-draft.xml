@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DRAFT: NOT READY TO FILE. Generated 2026-10-11T02:15:57.393Z. Input ff6f9bda0c70efdf. Required data is missing or unresolved; see the validation report. Not verified by NetCHB or CBP. -->
+<entry xmlns="http://www.netchb.com/xml/entry">
+  <entry-no>
+    <!-- MISSING (required by schema): entry-no [entry-no]: choose a user-specified entry number or the NetCHB system-generated option -->
+  </entry-no>
+  <header>
+    <!-- MISSING (conditionally required): header/importer-tax-id [header/importer-tax-id]: not available -->
+    <!-- MISSING (required by schema): header/processing-port [header/processing-port]: not available -->
+    <!-- MISSING (required by schema): header/entry-port [header/entry-port]: proposal awaiting confirmation -->
+    <!-- MISSING (required by schema): header/entry-date [header/entry-date]: not available -->
+    <!-- MISSING (required by schema): header/entry-type [header/entry-type]: not available -->
+    <!-- WITHHELD (unresolved issue): header/gross-weight [header/gross-weight]: see the validation report -->
+    <!-- MISSING (conditionally required): header/state-destination [header/state-destination]: proposal awaiting confirmation -->
+    <vessel-name>PACIFIC ARGOS</vessel-name>
+    <mode-transportation>11</mode-transportation>
+    <!-- MISSING (conditionally required): header/unlading-port [header/unlading-port]: proposal awaiting confirmation -->
+    <!-- WITHHELD (unresolved issue): header/carrier-code [header/carrier-code]: see the validation report -->
+    <voyage-no>041E</voyage-no>
+  </header>
+  <manifest>
+    <bill-of-lading>
+      <!-- WITHHELD (unresolved issue): manifest/bill-of-lading/master-scac [manifest/bill-of-lading/master-scac]: see the validation report -->
+      <master-bill>OPLUSGN260917735</master-bill>
+      <house-scac>BMLV</house-scac>
+      <house-bill>BMLVHCM26090418</house-bill>
+      <quantity>138</quantity>
+      <!-- MISSING (required by schema): manifest/bill-of-lading/unit [manifest/bill-of-lading/unit]: proposal awaiting confirmation -->
+    </bill-of-lading>
+  </manifest>
+  <containers>
+    <container>
+      <!-- WITHHELD (unresolved issue; proposal awaiting confirmation): containers/container/container-number [containers/container[1]/container-number]: see the validation report -->
+      <seal-numbers>OPL7731482</seal-numbers>
+    </container>
+  </containers>
+  <invoices>
+    <invoice>
+      <!-- MISSING (required by schema): invoices/invoice/invoice-no [invoice[1]/invoice-no]: proposal awaiting confirmation -->
+      <line-items>
+        <line-item>
+          <country-origin>VN</country-origin>
+          <!-- MISSING (optional; broker input required): line-item/manufacturer-id [invoice[1]/line[1]/manufacturer-id]: see the validation report -->
+          <commercial-description>MEN'S CREW NECK SHORT SLEEVE T-SHIRT</commercial-description>
+          <invoice-quantity>2400</invoice-quantity>
+          <po-number>NB-26-0918</po-number>
+          <!-- MISSING (conditionally required): line-item/country-export [invoice[1]/line[1]/country-export]: proposal awaiting confirmation -->
+          <!-- MISSING (conditionally required): line-item/lading-port [invoice[1]/line[1]/lading-port]: proposal awaiting confirmation -->
+          <tariffs>
+            <tariff>
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/tariff-no [invoice[1]/line[1]/tariff-no]: not available -->
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/value [invoice[1]/line[1]/value]: withheld: unresolved issue -->
+            </tariff>
+          </tariffs>
+        </line-item>
+        <line-item>
+          <country-origin>VN</country-origin>
+          <!-- MISSING (optional; broker input required): line-item/manufacturer-id [invoice[1]/line[2]/manufacturer-id]: see the validation report -->
+          <commercial-description>WOMEN'S PULLOVER HOODIE W/ KANGAROO POCKET</commercial-description>
+          <!-- WITHHELD (unresolved issue): line-item/invoice-quantity [invoice[1]/line[2]/invoice-quantity]: see the validation report -->
+          <po-number>NB-26-0918</po-number>
+          <!-- MISSING (conditionally required): line-item/country-export [invoice[1]/line[2]/country-export]: proposal awaiting confirmation -->
+          <!-- MISSING (conditionally required): line-item/lading-port [invoice[1]/line[2]/lading-port]: proposal awaiting confirmation -->
+          <tariffs>
+            <tariff>
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/tariff-no [invoice[1]/line[2]/tariff-no]: withheld: unresolved issue -->
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/value [invoice[1]/line[2]/value]: withheld: unresolved issue -->
+            </tariff>
+          </tariffs>
+        </line-item>
+        <line-item>
+          <country-origin>VN</country-origin>
+          <!-- MISSING (optional; broker input required): line-item/manufacturer-id [invoice[1]/line[3]/manufacturer-id]: see the validation report -->
+          <commercial-description>MEN'S SLIM FIT CHINO TROUSERS</commercial-description>
+          <invoice-quantity>900</invoice-quantity>
+          <po-number>NB-26-0918</po-number>
+          <!-- MISSING (conditionally required): line-item/country-export [invoice[1]/line[3]/country-export]: proposal awaiting confirmation -->
+          <!-- MISSING (conditionally required): line-item/lading-port [invoice[1]/line[3]/lading-port]: proposal awaiting confirmation -->
+          <tariffs>
+            <tariff>
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/tariff-no [invoice[1]/line[3]/tariff-no]: not available -->
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/value [invoice[1]/line[3]/value]: withheld: unresolved issue -->
+            </tariff>
+          </tariffs>
+        </line-item>
+        <line-item>
+          <country-origin>VN</country-origin>
+          <!-- MISSING (optional; broker input required): line-item/manufacturer-id [invoice[1]/line[4]/manufacturer-id]: see the validation report -->
+          <commercial-description>WOMEN'S LONG SLEEVE BLOUSE, V-NECK</commercial-description>
+          <invoice-quantity>600</invoice-quantity>
+          <po-number>NB-26-0918</po-number>
+          <!-- MISSING (conditionally required): line-item/country-export [invoice[1]/line[4]/country-export]: proposal awaiting confirmation -->
+          <!-- MISSING (conditionally required): line-item/lading-port [invoice[1]/line[4]/lading-port]: proposal awaiting confirmation -->
+          <tariffs>
+            <tariff>
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/tariff-no [invoice[1]/line[4]/tariff-no]: not available -->
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/value [invoice[1]/line[4]/value]: withheld: unresolved issue -->
+            </tariff>
+          </tariffs>
+        </line-item>
+        <line-item>
+          <!-- MISSING (required by schema): line-item/country-origin [invoice[1]/line[5]/country-origin]: withheld: unresolved issue -->
+          <!-- MISSING (optional; broker input required): line-item/manufacturer-id [invoice[1]/line[5]/manufacturer-id]: see the validation report -->
+          <commercial-description>WOMEN'S SHORT SLEEVE POLO SHIRT - SAMPLES</commercial-description>
+          <invoice-quantity>24</invoice-quantity>
+          <po-number>NB-26-0918</po-number>
+          <!-- MISSING (conditionally required): line-item/country-export [invoice[1]/line[5]/country-export]: proposal awaiting confirmation -->
+          <!-- MISSING (conditionally required): line-item/lading-port [invoice[1]/line[5]/lading-port]: proposal awaiting confirmation -->
+          <tariffs>
+            <tariff>
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/tariff-no [invoice[1]/line[5]/tariff-no]: not available -->
+              <!-- MISSING (required by schema): line-item/tariffs/tariff/value [invoice[1]/line[5]/value]: withheld: unresolved issue -->
+            </tariff>
+          </tariffs>
+        </line-item>
+      </line-items>
+    </invoice>
+  </invoices>
+</entry>

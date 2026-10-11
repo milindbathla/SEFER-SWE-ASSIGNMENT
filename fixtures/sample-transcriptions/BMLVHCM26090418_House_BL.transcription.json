@@ -1,0 +1,62 @@
+{
+  "format": "sefer-transcription/v1",
+  "transcribedBy": "Manual transcription prepared during development (read from the scanned image in the recorded AI chat session and checked against the field mapping approved at Checkpoint A, docs/research-log.md §3).",
+  "transcriptionNote": "Typed by hand during development, before local OCR was added; these are the reviewed values that stand in for a user's verified OCR readings (the app's own OCR output for this scan is tested separately). Values are copied exactly as printed or handwritten. The container number has a struck-through typed value and a handwritten correction; both are recorded. Verify against the scanned PDF before relying on them.",
+  "document": {
+    "fileName": "BMLVHCM26090418_House_BL.pdf",
+    "sha256": "d075d076bca14ec33c11440772b8580f96180e636bb5920f1c81f5769fbda34b",
+    "docType": "bill_of_lading",
+    "pageCount": 1,
+    "fields": {
+      "blNumber": { "value": "BMLVHCM26090418", "page": 1, "quote": "B/L No. BMLVHCM26090418" },
+      "masterBlNumber": { "value": "OPLUSGN260917735", "page": 1, "quote": "Master B/L No. / Ocean Carrier: MBL: OPLUSGN260917735 CARRIER: ORIENT PACIFIC LINES (OPLU)" },
+      "issuerScac": { "value": "BMLV", "page": 1, "quote": "BLUE MERIDIAN LOGISTICS (VIETNAM) CO., LTD. ... FMC NVOCC No. 029415N SCAC: BMLV" },
+      "carrier": { "value": "ORIENT PACIFIC LINES (OPLU)", "page": 1, "quote": "CARRIER: ORIENT PACIFIC LINES (OPLU)" },
+      "bookingNumber": { "value": "BMLHCM2609-0377", "page": 1, "quote": "Booking No. BMLHCM2609-0377" },
+      "shipper": { "value": "SAIGON PHOENIX GARMENT JSC", "page": 1, "quote": "SAIGON PHOENIX GARMENT JSC LOT C7-C8, ROAD NO. 9, SONG THAN 2 IP DI AN CITY, BINH DUONG, VIETNAM O/B KOWLOON BAY APPAREL SOURCING LTD KWUN TONG, KOWLOON, HONG KONG" },
+      "consignee": { "value": "CASCADE FULFILLMENT PARTNERS LLC", "page": 1, "quote": "CASCADE FULFILLMENT PARTNERS LLC 21820 76TH AVENUE SOUTH, DOCK 4 KENT, WA 98032, USA ATTN: RECEIVING TEL: +1 253 555 0193" },
+      "notifyParty": { "value": "NORTHBOUND OUTFITTERS, INC.", "page": 1, "quote": "NORTHBOUND OUTFITTERS, INC. 2150 NW RALEIGH ST, SUITE 300 PORTLAND, OR 97210, USA TEL: +1 503 555 0148 ATTN: M. HOLT ALSO NOTIFY: CUSTOMS BROKER (TBA)", "note": "Partly overlapped by the TELEX RELEASED stamp; text remains legible." },
+      "invoiceReference": { "value": "KBAS/NB/26-0912", "page": 1, "quote": "Export References: INV KBAS/NB/26-0912 PO NB-26-0918" },
+      "buyerPo": { "value": "NB-26-0918", "page": 1, "quote": "Export References: INV KBAS/NB/26-0912 PO NB-26-0918" },
+      "countryOfOrigin": { "value": "VIETNAM", "page": 1, "quote": "Point and Country of Origin of Goods: VIETNAM" },
+      "vesselName": { "value": "PACIFIC ARGOS", "page": 1, "quote": "Ocean Vessel / Voy. No. PACIFIC ARGOS 041E" },
+      "voyageNumber": { "value": "041E", "page": 1, "quote": "Ocean Vessel / Voy. No. PACIFIC ARGOS 041E" },
+      "portOfLoading": { "value": "CAT LAI, HCMC, VN", "page": 1, "quote": "Port of Loading: CAT LAI, HCMC, VN" },
+      "portOfDischarge": { "value": "TACOMA, WA, USA", "page": 1, "quote": "Port of Discharge: TACOMA, WA, USA" },
+      "placeOfReceipt": { "value": "SONG THAN, BINH DUONG", "page": 1, "quote": "Place of Receipt: SONG THAN, BINH DUONG" },
+      "placeOfDelivery": { "value": "KENT, WA (DOOR)", "page": 1, "quote": "Place of Delivery: KENT, WA (DOOR)" },
+      "packages": { "value": "138 CARTONS", "page": 1, "quote": "No. of Pkgs: 138 CARTONS" },
+      "grossWeight": { "value": "1,930.000 KGS", "page": 1, "quote": "Gross Weight: 1,930.000 KGS" },
+      "measurement": { "value": "13.580 CBM", "page": 1, "quote": "Measurement: 13.580 CBM" },
+      "shippedOnBoardDate": { "value": "24 SEP 2026", "page": 1, "quote": "SHIPPED ON BOARD DATE: 24 SEP 2026 CAT LAI, HCMC VSL: PACIFIC ARGOS", "note": "Rubber stamp." },
+      "placeDateOfIssue": { "value": "HO CHI MINH CITY, 24-SEP-2026", "page": 1, "quote": "Place and Date of Issue: HO CHI MINH CITY, 24-SEP-2026" },
+      "hsCodes": { "value": "6109.10 / 6110.20 / 6203.42 6206.40 / 6106.10", "page": 1, "quote": "HS: 6109.10 / 6110.20 / 6203.42 6206.40 / 6106.10" },
+      "marks": { "value": "N/M: NORTHBOUND OUTFITTERS PO#: NB-26-0918 C/NO.: 1-138 MADE IN VIETNAM", "page": 1, "quote": "N/M: NORTHBOUND OUTFITTERS PO#: NB-26-0918 C/NO.: 1-138 MADE IN VIETNAM" },
+      "freightTerms": { "value": "OCEAN FREIGHT PREPAID; THC ORIGIN PREPAID; DESTINATION CHGS COLLECT", "page": 1, "quote": "OCEAN FREIGHT PREPAID THC ORIGIN PREPAID DESTINATION CHGS COLLECT AS ARRANGED" }
+    },
+    "lines": [],
+    "containers": [
+      {
+        "number": { "value": "OPLU3041728", "page": 1, "quote": "OPLU3041728", "note": "Typed, struck through with a handwritten line and initials." },
+        "seal": { "value": "OPL7731482", "page": 1, "quote": "SEAL: OPL7731482" },
+        "marking": "printed",
+        "struckThrough": true
+      },
+      {
+        "number": { "value": "OPLU3041722", "page": 1, "quote": "OPLU 304172 2", "note": "Handwritten correction below the struck-through typed number." },
+        "seal": { "value": "OPL7731482", "page": 1, "quote": "SEAL: OPL7731482" },
+        "marking": "handwritten",
+        "struckThrough": false
+      }
+    ],
+    "textLines": [
+      { "page": 1, "text": "1 X 20'GP CONTAINER S.T.C.: 138 CARTONS OF WEARING APPAREL - MEN'S AND LADIES' KNIT AND WOVEN GARMENTS (T-SHIRTS, HOODIES, TROUSERS, BLOUSES, POLO SAMPLES)" },
+      { "page": 1, "text": "SHIPPER'S LOAD, STOW AND COUNT CY/CFS - FREIGHT PREPAID" },
+      { "page": 1, "text": "AMS FILED BY: BLUE MERIDIAN ISF FILED BY: IMPORTER/AGENT" },
+      { "page": 1, "text": "TELEX RELEASED ORIGINALS SURRENDERED AT ORIGIN 25-SEP-2026 BML-HCM" },
+      { "page": 1, "text": "Type of Move: CFS / DOOR" },
+      { "page": 1, "text": "DOOR DELIVERY VIA TACOMA RAMP/TRUCK TO CONSIGNEE WAREHOUSE KENT WA" },
+      { "page": 1, "text": "ALSO NOTIFY: CUSTOMS BROKER (TBA)" }
+    ]
+  }
+}

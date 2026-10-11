@@ -1,0 +1,102 @@
+{
+  "format": "sefer-transcription/v1",
+  "transcribedBy": "Manual transcription prepared during development (read from the scanned image in the recorded AI chat session and checked against the field mapping approved at Checkpoint A, docs/research-log.md §3).",
+  "transcriptionNote": "Typed by hand during development, before local OCR was added; these are the reviewed values that stand in for a user's verified OCR readings (the app's own OCR output for this scan is tested separately). Values are copied exactly as printed. Verify against the scanned PDF before relying on them.",
+  "document": {
+    "fileName": "SPG-PL-2609-117_Packing_List.pdf",
+    "sha256": "c2404938fa7f1c8fd349cebd43a12337a069ee41df711d51c3327b0534f0d31c",
+    "docType": "packing_list",
+    "pageCount": 1,
+    "fields": {
+      "packingListNumber": { "value": "SPG-PL-2609-117", "page": 1, "quote": "P/L No.: SPG-PL-2609-117 Date: 20-Sep-2026" },
+      "packingListDate": { "value": "20-Sep-2026", "page": 1, "quote": "P/L No.: SPG-PL-2609-117 Date: 20-Sep-2026" },
+      "invoiceReference": { "value": "KBAS/NB/26-0912", "page": 1, "quote": "Ref. Invoice: KBAS/NB/26-0912" },
+      "buyerPo": { "value": "NB-26-0918", "page": 1, "quote": "Buyer P.O.: NB-26-0918 Factory Order: SPG-0918" },
+      "shipper": { "value": "SAIGON PHOENIX GARMENT JSC", "page": 1, "quote": "SHIPPER / EXPORTER: SAIGON PHOENIX GARMENT JSC on behalf of KOWLOON BAY APPAREL SOURCING LTD. Unit 1708, 17/F, Hing Fat Ind. Bldg., 223 Wai Yip St., Kwun Tong, Kowloon, Hong Kong" },
+      "consignee": { "value": "NORTHBOUND OUTFITTERS, INC.", "page": 1, "quote": "CONSIGNEE / BUYER: NORTHBOUND OUTFITTERS, INC. 2150 NW Raleigh St., Suite 300, Portland, OR 97210, USA" },
+      "deliverTo": { "value": "Cascade Fulfillment Partners LLC", "page": 1, "quote": "Deliver to: Cascade Fulfillment Partners LLC, 21820 76th Ave S, Kent, WA 98032, USA" },
+      "vesselName": { "value": "PACIFIC ARGOS", "page": 1, "quote": "Vessel: PACIFIC ARGOS 041E Cntr: 1 x 20'GP" },
+      "voyageNumber": { "value": "041E", "page": 1, "quote": "Vessel: PACIFIC ARGOS 041E Cntr: 1 x 20'GP" },
+      "portOfLoading": { "value": "CAT LAI, HCMC", "page": 1, "quote": "From: CAT LAI, HCMC To: TACOMA, WA" },
+      "portOfDischarge": { "value": "TACOMA, WA", "page": 1, "quote": "From: CAT LAI, HCMC To: TACOMA, WA" },
+      "containerSummary": { "value": "1 x 20'GP", "page": 1, "quote": "Cntr: 1 x 20'GP" },
+      "totalCartons": { "value": "138", "page": 1, "quote": "GRAND TOTAL 138 5,100 1,734.50 1,888.00 13.58 CBM" },
+      "totalQuantity": { "value": "5,100", "page": 1, "quote": "GRAND TOTAL 138 5,100 1,734.50 1,888.00 13.58 CBM" },
+      "totalNetWeight": { "value": "1,734.50 KGS", "page": 1, "quote": "TOTAL N.W.: 1,734.50 KGS" },
+      "totalGrossWeight": { "value": "1,888.00 KGS", "page": 1, "quote": "TOTAL G.W.: 1,888.00 KGS" },
+      "totalVolume": { "value": "13.58 CBM", "page": 1, "quote": "TOTAL MEAS.: 13.58 CBM" },
+      "shippingMarks": { "value": "NORTHBOUND OUTFITTERS / PO#: NB-26-0918 / STYLE#: / COLOUR / SIZE: / QTY: PCS / C/NO.: 1 - 138 / MADE IN VIETNAM", "page": 1, "quote": "SHIPPING MARKS: NORTHBOUND OUTFITTERS PO#: NB-26-0918 STYLE#: COLOUR / SIZE: QTY: PCS C/NO.: 1 - 138 MADE IN VIETNAM" }
+    },
+    "lines": [
+      {
+        "cells": {
+          "cartonRange": { "value": "1 - 48", "page": 1, "quote": "1 - 48 NB-T101 MEN'S CREW NECK S/S TEE 100% COTTON JERSEY 160GSM BLACK / WHITE / HTHR NAVY 48 50 2,400 9.00 10.00 432.00 480.00 60x40x35" },
+          "style": { "value": "NB-T101", "page": 1, "quote": "1 - 48 NB-T101" },
+          "description": { "value": "MEN'S CREW NECK S/S TEE\n100% COTTON JERSEY 160GSM", "page": 1, "quote": "MEN'S CREW NECK S/S TEE 100% COTTON JERSEY 160GSM" },
+          "cartons": { "value": "48", "page": 1, "quote": "48 50 2,400" },
+          "pcsPerCarton": { "value": "50", "page": 1, "quote": "48 50 2,400" },
+          "quantity": { "value": "2,400", "page": 1, "quote": "48 50 2,400" },
+          "netWeight": { "value": "432.00", "page": 1, "quote": "9.00 10.00 432.00 480.00" },
+          "grossWeight": { "value": "480.00", "page": 1, "quote": "9.00 10.00 432.00 480.00" }
+        }
+      },
+      {
+        "cells": {
+          "cartonRange": { "value": "49 - 97", "page": 1, "quote": "49 - 97 NB-H205 LADIES PULLOVER HOODIE TC 65/35 FLEECE 280GSM OATMEAL / SAGE 49 24 1,176 14.60 15.80 715.40 774.20 60x45x45" },
+          "style": { "value": "NB-H205", "page": 1, "quote": "49 - 97 NB-H205" },
+          "description": { "value": "LADIES PULLOVER HOODIE\nTC 65/35 FLEECE 280GSM", "page": 1, "quote": "LADIES PULLOVER HOODIE TC 65/35 FLEECE 280GSM" },
+          "cartons": { "value": "49", "page": 1, "quote": "49 24 1,176" },
+          "pcsPerCarton": { "value": "24", "page": 1, "quote": "49 24 1,176" },
+          "quantity": { "value": "1,176", "page": 1, "quote": "49 24 1,176" },
+          "netWeight": { "value": "715.40", "page": 1, "quote": "14.60 15.80 715.40 774.20" },
+          "grossWeight": { "value": "774.20", "page": 1, "quote": "14.60 15.80 715.40 774.20" }
+        }
+      },
+      {
+        "cells": {
+          "cartonRange": { "value": "98 - 127", "page": 1, "quote": "98 - 127 NB-C330 MEN'S SLIM CHINO PANT 98/2 COTTON/SPANDEX TWILL KHAKI / OLIVE / NAVY 30 30 900 16.20 17.40 486.00 522.00 60x40x40" },
+          "style": { "value": "NB-C330", "page": 1, "quote": "98 - 127 NB-C330" },
+          "description": { "value": "MEN'S SLIM CHINO PANT\n98/2 COTTON/SPANDEX TWILL", "page": 1, "quote": "MEN'S SLIM CHINO PANT 98/2 COTTON/SPANDEX TWILL" },
+          "cartons": { "value": "30", "page": 1, "quote": "30 30 900" },
+          "pcsPerCarton": { "value": "30", "page": 1, "quote": "30 30 900" },
+          "quantity": { "value": "900", "page": 1, "quote": "30 30 900" },
+          "netWeight": { "value": "486.00", "page": 1, "quote": "16.20 17.40 486.00 522.00" },
+          "grossWeight": { "value": "522.00", "page": 1, "quote": "16.20 17.40 486.00 522.00" }
+        }
+      },
+      {
+        "cells": {
+          "cartonRange": { "value": "128 - 137", "page": 1, "quote": "128 - 137 W-B220 LADIES L/S V-NECK BLOUSE 100% POLY CREPE (BUYER FABRIC) IVORY / BLACK 10 60 600 9.60 10.60 96.00 106.00 55x40x30" },
+          "style": { "value": "W-B220", "page": 1, "quote": "128 - 137 W-B220" },
+          "description": { "value": "LADIES L/S V-NECK BLOUSE\n100% POLY CREPE (BUYER FABRIC)", "page": 1, "quote": "LADIES L/S V-NECK BLOUSE 100% POLY CREPE (BUYER FABRIC)" },
+          "cartons": { "value": "10", "page": 1, "quote": "10 60 600" },
+          "pcsPerCarton": { "value": "60", "page": 1, "quote": "10 60 600" },
+          "quantity": { "value": "600", "page": 1, "quote": "10 60 600" },
+          "netWeight": { "value": "96.00", "page": 1, "quote": "9.60 10.60 96.00 106.00" },
+          "grossWeight": { "value": "106.00", "page": 1, "quote": "9.60 10.60 96.00 106.00" }
+        }
+      },
+      {
+        "cells": {
+          "cartonRange": { "value": "138", "page": 1, "quote": "138 NB-P118S LADIES POLO - SAMPLES (FOC) 100% COTTON PIQUE ASSORTED 1 PC PER COLOUR/SIZE ** 1 24 24 5.10 5.80 5.10 5.80 50x35x30" },
+          "style": { "value": "NB-P118S", "page": 1, "quote": "138 NB-P118S" },
+          "description": { "value": "LADIES POLO - SAMPLES (FOC)\n100% COTTON PIQUE", "page": 1, "quote": "LADIES POLO - SAMPLES (FOC) 100% COTTON PIQUE" },
+          "cartons": { "value": "1", "page": 1, "quote": "1 24 24" },
+          "pcsPerCarton": { "value": "24", "page": 1, "quote": "1 24 24" },
+          "quantity": { "value": "24", "page": 1, "quote": "1 24 24" },
+          "netWeight": { "value": "5.10", "page": 1, "quote": "5.10 5.80 5.10 5.80" },
+          "grossWeight": { "value": "5.80", "page": 1, "quote": "5.10 5.80 5.10 5.80" }
+        }
+      }
+    ],
+    "containers": [],
+    "textLines": [
+      { "page": 1, "text": "SAY TOTAL: ONE HUNDRED THIRTY EIGHT (138) CARTONS ONLY. TOTAL N.W.: 1,734.50 KGS TOTAL G.W.: 1,888.00 KGS TOTAL MEAS.: 13.58 CBM" },
+      { "page": 1, "text": "SHIPPING MARKS: NORTHBOUND OUTFITTERS PO#: NB-26-0918 STYLE#: COLOUR / SIZE: QTY: PCS C/NO.: 1 - 138 MADE IN VIETNAM" },
+      { "page": 1, "text": "REMARKS: 1. All cartons 5-ply export cartons, strapped, palletized: NO." },
+      { "page": 1, "text": "2. Style W-B220 sewn from buyer-supplied fabric (Ref. NB-26-0918F)." },
+      { "page": 1, "text": "3. ** Carton No. 138: FOC samples (ladies polo NB-P118S) produced at our sister unit SP Garments Dhaka Ltd., Plot 41, Gazipur, Bangladesh. Made in Bangladesh. Hand-carried to Cat Lai CFS for consolidation." },
+      { "page": 1, "text": "4. Seal no. per B/L." }
+    ]
+  }
+}

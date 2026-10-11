@@ -1,0 +1,30 @@
+{
+  "name": "sefer-entry-builder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shipment documents in, evidence-backed NetCHB entry XML draft out (local download only).",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm run dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w web",
+    "start": "npm run start -w server",
+    "test": "vitest run",
+    "typecheck": "tsc -p shared --noEmit && tsc -p shared/tsconfig.test.json --noEmit && tsc -p server --noEmit && tsc -p web --noEmit",
+    "sample": "npm run sample -w server",
+    "e2e:api": "node scripts/e2e/api-e2e.mjs",
+    "e2e:browser": "node scripts/e2e/browser-e2e.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.0",
+    "concurrently": "10.0.5",
+    "typescript": "6.0.3",
+    "vitest": "5.0.2"
+  }
+}

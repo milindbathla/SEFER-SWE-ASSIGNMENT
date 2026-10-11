@@ -1,0 +1,28 @@
+{
+  "name": "@sefer/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "sample": "tsx scripts/generate-sample.ts"
+  },
+  "dependencies": {
+    "@sefer/shared": "0.1.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "express": "5.2.1",
+    "multer": "2.4.0",
+    "tesseract.js": "7.0.0",
+    "unpdf": "1.8.1",
+    "xmlbuilder2": "4.0.3",
+    "xmllint-wasm": "5.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/multer": "2.2.0",
+    "@types/supertest": "7.2.1",
+    "supertest": "7.3.0",
+    "tsx": "4.23.15"
+  }
+}
